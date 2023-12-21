@@ -291,18 +291,18 @@ void cMouseUnitsSelectedState::evaluateMouseMoveState() {
                     setState(SELECTED_STATE_REFINERY);
                 } else {
                     setState(SELECTED_STATE_SELECT);
-                    mouseTile = MOUSE_NORMAL; // allow "selecting" of structure, event though we have units selected
+                    mouseTile = MOUSE_NORMAL; // allow "selecting" of structure, even though we have units selected
                 }
             } else if (hoverStructure->getType() == REPAIR) {
                 if (m_repairableUnitsSelected || m_harvestersSelected) {
                     setState(SELECTED_STATE_REPAIR);
                 } else {
                     setState(SELECTED_STATE_SELECT);
-                    mouseTile = MOUSE_NORMAL; // allow "selecting" of structure, event though we have units selected
+                    mouseTile = MOUSE_NORMAL; // allow "selecting" of structure, even though we have units selected
                 }
             } else {
                 setState(SELECTED_STATE_SELECT);
-                mouseTile = MOUSE_NORMAL; // allow "selecting" of structure, event though we have units selected
+                mouseTile = MOUSE_NORMAL; // allow "selecting" of structure, even though we have units selected
             }
         }
     }
