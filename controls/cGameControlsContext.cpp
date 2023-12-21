@@ -229,8 +229,8 @@ void cGameControlsContext::onNotifyKeyboardEvent(const cKeyboardEvent &event) {
 
 void cGameControlsContext::setMouseState(eMouseState newState) {
     if (newState != m_state) {
-        // Remember previous state as long as it is not the PLACE state, since we can't go back to that state
-        if (m_state != eMouseState::MOUSESTATE_PLACE) {
+        // Remember previous state as long as it is not the PLACE or DEPLOY state
+        if (m_state != eMouseState::MOUSESTATE_PLACE && m_state != eMouseState::MOUSESTATE_DEPLOY) {
             m_prevState = m_state;
             if (newState == eMouseState::MOUSESTATE_REPAIR) {
                 m_prevStateBeforeRepair = m_state;
