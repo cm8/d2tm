@@ -222,13 +222,19 @@ void cMouseUnitsSelectedState::onMouseMiddleButtonClicked() {
 }
 
 void cMouseUnitsSelectedState::onMouseMovedTo() {
-    if (m_state == SELECTED_STATE_FORCE_ATTACK) {
+    if (m_mouse->isBoxSelecting()) {
+        mouseTile = MOUSE_NORMAL;
+    } else if (m_state == SELECTED_STATE_FORCE_ATTACK) {
         mouseTile = MOUSE_ATTACK;
-    } if (m_state == SELECTED_STATE_ADD_TO_SELECTION) {
-        if (m_mouse->isBoxSelecting()) {
-            mouseTile = MOUSE_NORMAL;
-        } else {
-            mouseTile = MOUSE_PICK;
+    } else if (m_state == SELECTED_STATE_ADD_TO_SELECTION) {
+        mouseTile = MOUSE_NORMAL;
+
+        int hoverUnitId = m_context->getIdOfUnitWhereMouseHovers();
+        if (hoverUnitId > -1) {
+            cUnit &pUnit = unit[hoverUnitId];
+            if (pUnit.getPlayer() == m_player) {
+                mouseTile = MOUSE_PICK;
+            }
         }
     } else {
         evaluateMouseMoveState();
@@ -371,24 +377,14 @@ void cMouseUnitsSelectedState::onNotifyKeyboardEvent(const cKeyboardEvent &event
 
 void cMouseUnitsSelectedState::onKeyDown(const cKeyboardEvent &event) {
     if (event.hasKey(KEY_LCONTROL) || event.hasKey(KEY_RCONTROL)) {
-        setState(SELECTED_STATE_ATTACK);
-        mouseTile = MOUSE_ATTACK;
+        setState(SELECTED_STATE_FORCE_ATTACK);
+        onMouseMovedTo();
     }
 
     bool appendingSelectionToGroup = event.hasKey(KEY_LSHIFT) || event.hasKey(KEY_RSHIFT);
     if (appendingSelectionToGroup) {
         setState(SELECTED_STATE_ADD_TO_SELECTION);
-        mouseTile = MOUSE_NORMAL;
-
-        if (!m_mouse->isBoxSelecting()) {
-            int hoverUnitId = m_context->getIdOfUnitWhereMouseHovers();
-            if (hoverUnitId > -1) {
-                cUnit &pUnit = unit[hoverUnitId];
-                if (pUnit.getPlayer() == m_player) {
-                    mouseTile = MOUSE_PICK;
-                }
-            }
-        }
+        onMouseMovedTo();
 
         int iGroup = event.getGroupNumber();
 
@@ -429,13 +425,25 @@ void cMouseUnitsSelectedState::onKeyDown(const cKeyboardEvent &event) {
 
 void cMouseUnitsSelectedState::onKeyPressed(const cKeyboardEvent &event) {
     if (event.hasKey(KEY_LCONTROL) || event.hasKey(KEY_RCONTROL)) {
-        setState(SELECTED_STATE_ATTACK);
-        evaluateMouseMoveState();
+        // CTRL released while SHIFT still down
+        if (m_prevState == SELECTED_STATE_FORCE_ATTACK) {
+            m_prevState = SELECTED_STATE_MOVE;
+        }
+        if (m_state == SELECTED_STATE_FORCE_ATTACK) {
+            toPreviousState();
+            onMouseMovedTo();
+        }
     }
 
     if (event.hasKey(KEY_LSHIFT) || event.hasKey(KEY_RSHIFT)) {
-        toPreviousState();
-        evaluateMouseMoveState();
+        // SHIFT released while CTRL still down
+        if (m_prevState == SELECTED_STATE_ADD_TO_SELECTION) {
+            m_prevState = SELECTED_STATE_MOVE;
+        }
+        if (m_state == SELECTED_STATE_ADD_TO_SELECTION) {
+            toPreviousState();
+            onMouseMovedTo();
+        }
     }
 
     // leave capture intent
