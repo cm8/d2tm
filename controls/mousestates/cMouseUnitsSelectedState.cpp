@@ -37,7 +37,6 @@ std::string mouseUnitsSelectedStateString(eMouseUnitsSelectedState state) {
 
 cMouseUnitsSelectedState::cMouseUnitsSelectedState(cPlayer *player, cGameControlsContext *context, cMouse *mouse) :
         cMouseState(player, context, mouse),
-        m_selectedUnits(),
         m_harvestersSelected(false),
         m_infantrySelected(false),
         m_infantryShouldCapture(false),
@@ -79,46 +78,81 @@ void cMouseUnitsSelectedState::onNotifyMouseEvent(const s_MouseEvent &event) {
     }
 }
 
-void cMouseUnitsSelectedState::onMouseLeftButtonClicked() {
-    if (m_mouse->isBoxSelecting()) {
-        // clear only when we don't want to add to selection
-        if (m_state != SELECTED_STATE_ADD_TO_SELECTION) {
-            m_player->deselectAllUnits();
-            m_selectedUnits.clear();
-        }
+bool cMouseUnitsSelectedState::deselectUnit(int id) {
+    bool ok = false;
 
+    cUnit &pUnit = unit[id];
+    if (pUnit.getPlayer() == m_player) {
+        if (pUnit.bSelected) {
+            m_player->deselectUnit(id);
+
+            // the deselected unit may have been last in its group
+            if (pUnit.isHarvester()) {
+                m_harvestersSelected = false;
+            } else if (pUnit.isInfantryUnit()) {
+                m_infantrySelected = false;
+            } else {
+                m_repairableUnitsSelected = false;
+            }
+
+            // does m_context->setMouseState on emptied selection
+            changeSelectedUnits(m_player->getSelectedUnits());
+
+            ok = true;
+        }
+    }
+
+    return ok;
+}
+
+void cMouseUnitsSelectedState::changeSelectedUnits(const std::vector<int> &ids) {
+    bool replace = m_state != SELECTED_STATE_ADD_TO_SELECTION;
+
+    if (replace) {
+        m_player->deselectAllUnits();
+    }
+    m_player->selectUnits(ids);
+    updateSelectedUnitsState(ids, replace);
+
+    if (!(m_harvestersSelected || m_infantrySelected || m_repairableUnitsSelected)) {
+        // we get in a state where no units are selected,
+        // so get back into "select" state.
+        m_context->setMouseState(MOUSESTATE_SELECT);
+    }
+}
+
+void cMouseUnitsSelectedState::onMouseLeftButtonClicked() {
+    logbook(fmt::format(
+        "cMouseUnitsSelectedState::onMouseLeftButtonClicked(): eval with state {}",
+        mouseUnitsSelectedStateString(m_state)
+    ));
+
+    if (m_mouse->isBoxSelecting()) {
         cRectangle boxSelectRectangle = m_mouse->getBoxSelectRectangle();
-        const std::vector<int> &ids = m_player->getAllMyUnitsWithinViewportRect(boxSelectRectangle);
-        m_player->selectUnits(ids);
+        changeSelectedUnits(m_player->getAllMyUnitsWithinViewportRect(boxSelectRectangle));
     } else {
         // single click, no box select
-        evaluateSelectedUnits();
-
         int mouseCell = m_context->getMouseCell();
 
         bool infantryAcknowledged = false;
         bool unitAcknowledged = false;
 
         if (m_state == SELECTED_STATE_SELECT) {
+            // evaluateMouseMoveState set state on condition m_player is owner of selectable
             int hoverStructureId = m_context->getIdOfStructureWhereMouseHovers();
             if (hoverStructureId > -1) {
                 m_player->selected_structure = hoverStructureId;
                 cAbstractStructure *pStructure = m_player->getSelectedStructure();
-                if (pStructure && pStructure->isValid() && pStructure->belongsTo(m_player)) {
+                if (pStructure && pStructure->isValid()) {
                     m_player->getSideBar()->setSelectedListId(pStructure->getAssociatedListID());
+                    changeSelectedUnits(std::vector<int>());
                 } else {
                     m_player->selected_structure = -1;
                 }
             } else {
                 int hoverUnitId = m_context->getIdOfUnitWhereMouseHovers();
                 if (hoverUnitId > -1) {
-                    m_player->deselectAllUnits();
-                    m_selectedUnits.clear();
-
-                    auto ids = std::vector<int>();
-                    ids.push_back(hoverUnitId);
-
-                    m_player->selectUnits(ids);
+                    changeSelectedUnits(std::vector<int>(1, hoverUnitId));
                 }
             }
         } else if (m_state == SELECTED_STATE_REPAIR ||
@@ -126,7 +160,7 @@ void cMouseUnitsSelectedState::onMouseLeftButtonClicked() {
                     m_state == SELECTED_STATE_MOVE ||
                     m_state == SELECTED_STATE_CAPTURE) {
 
-            for (auto id: m_selectedUnits) {
+            for (const auto &id: m_player->getSelectedUnits()) {
                 cUnit &pUnit = unit[id];
                 if (m_state == SELECTED_STATE_REPAIR) {
                     // only send units that are eligible for repair to facility
@@ -152,34 +186,24 @@ void cMouseUnitsSelectedState::onMouseLeftButtonClicked() {
             }
             spawnParticle(D2TM_PARTICLE_MOVE);
         } else if (m_state == SELECTED_STATE_ATTACK || m_state == SELECTED_STATE_FORCE_ATTACK) {
-            for (auto id: m_selectedUnits) {
+            for (const auto &id: m_player->getSelectedUnits()) {
                 cUnit &pUnit = unit[id];
-                if (pUnit.isHarvester()) {
-                    continue;
+                if (!pUnit.isHarvester()) {
+                    if (pUnit.isInfantryUnit()) {
+                        infantryAcknowledged = true;
+                    } else {
+                        unitAcknowledged = true;
+                    }
+                    pUnit.attackAt(mouseCell);
                 }
-                if (pUnit.isInfantryUnit()) {
-                    infantryAcknowledged = true;
-                } else {
-                    unitAcknowledged = true;
-                }
-                pUnit.attackAt(mouseCell);
             }
 
             spawnParticle(D2TM_PARTICLE_ATTACK);
         } else if (m_state == SELECTED_STATE_ADD_TO_SELECTION) {
             const int hoverUnitId = m_context->getIdOfUnitWhereMouseHovers();
             if (hoverUnitId > -1) {
-                cUnit &pUnit = unit[hoverUnitId];
-                if (pUnit.getPlayer() == m_player) {
-                    auto ids = m_player->getSelectedUnits();
-                    auto position = std::find(ids.begin(), ids.end(), hoverUnitId);
-                    if (position != ids.end()) {
-                        m_player->deselectUnit(hoverUnitId);
-                    } else{
-                        // id not found, add it to the list
-                        ids.push_back(hoverUnitId); // add this unit
-                        m_player->selectUnits(ids);
-                    }
+                if (!deselectUnit(hoverUnitId)) {
+                    changeSelectedUnits(std::vector<int>(1, hoverUnitId));
                 }
             }
         }
@@ -194,12 +218,6 @@ void cMouseUnitsSelectedState::onMouseLeftButtonClicked() {
     }
 
     m_mouse->resetBoxSelect();
-
-    m_selectedUnits = m_player->getSelectedUnits();
-    if (m_selectedUnits.empty()) {
-        m_context->setMouseState(MOUSESTATE_SELECT);
-    }
-
 }
 
 void cMouseUnitsSelectedState::onMouseRightButtonPressed() {
@@ -209,9 +227,8 @@ void cMouseUnitsSelectedState::onMouseRightButtonPressed() {
 void cMouseUnitsSelectedState::onMouseRightButtonClicked() {
     // if we were dragging the viewport, keep the units and this state.
     if (!m_mouse->isMapScrolling()) {
-        m_player->deselectAllUnits();
         // back to "select" state
-        m_context->setMouseState(MOUSESTATE_SELECT);
+        changeSelectedUnits(std::vector<int>());
     }
 
     m_mouse->resetDragViewportInteraction();
@@ -296,22 +313,19 @@ void cMouseUnitsSelectedState::evaluateMouseMoveState() {
 }
 
 void cMouseUnitsSelectedState::onStateSet() {
-    // only on state change we refresh the entire vector
-    m_selectedUnits = m_player->getSelectedUnits();
-
-    evaluateSelectedUnits();
     m_infantryShouldCapture = false;
     updateSelectedUnitsState();
-
-    mouseTile = MOUSE_MOVE; // TODO: check if unit at cell
+    evaluateMouseMoveState();
     m_mouse->setTile(mouseTile);
 }
 
-void cMouseUnitsSelectedState::updateSelectedUnitsState() {
-    m_harvestersSelected = false;
-    m_infantrySelected = false;
-    m_repairableUnitsSelected = false;
-    for (auto id: m_selectedUnits) {
+void cMouseUnitsSelectedState::updateSelectedUnitsState(const std::vector<int> &ids, bool reset) {
+    if (reset) {
+        m_harvestersSelected = false;
+        m_infantrySelected = false;
+        m_repairableUnitsSelected = false;
+    }
+    for (const auto &id: ids) {
         cUnit &pUnit = unit[id];
         if (pUnit.isHarvester()) {
             m_harvestersSelected = true;
@@ -328,20 +342,8 @@ void cMouseUnitsSelectedState::updateSelectedUnitsState() {
     }
 }
 
-void cMouseUnitsSelectedState::evaluateSelectedUnits() {
-    // remove all invalid and units that (no longer) belong to us (ie, deviated?)
-    // TODO: let this (also?) react to game events, so we remove them when it happens.
-    m_selectedUnits.erase(
-            std::remove_if(
-                    m_selectedUnits.begin(),
-                    m_selectedUnits.end(),
-                    [this](int id) {
-                        return !unit[id].isValid() || // no (longer) valid
-                               !unit[id].belongsTo(m_player) || // no longer belongs to player
-                               unit[id].isHidden(); // hidden (entered structure, etc). Forget it then.
-                    }),
-            m_selectedUnits.end()
-    );
+void cMouseUnitsSelectedState::updateSelectedUnitsState() {
+    updateSelectedUnitsState(m_player->getSelectedUnits(), true);
 }
 
 void cMouseUnitsSelectedState::setState(eMouseUnitsSelectedState newState) {
@@ -390,10 +392,8 @@ void cMouseUnitsSelectedState::onKeyDown(const cKeyboardEvent &event) {
 
         // holding shift & group number, so add group to the selected units
         if (iGroup > 0) {
-            this->m_player->selectUnitsFromGroup(iGroup);
+            changeSelectedUnits(m_player->getAllMyUnitsForGroupNr(iGroup));
         }
-
-        m_selectedUnits = m_player->getSelectedUnits();
     } else {
         bool createGroup = event.hasKey(KEY_RCONTROL) || event.hasKey(KEY_LCONTROL);
         // Do this within the "HOLD" event, because if we do it at Pressed event
@@ -403,15 +403,7 @@ void cMouseUnitsSelectedState::onKeyDown(const cKeyboardEvent &event) {
 
             if (iGroup > 0) {
                 // select all units for group
-                m_player->deselectAllUnits();
-                bool anyUnitSelected = m_player->selectUnitsFromGroup(iGroup);
-                if (anyUnitSelected) {
-                    m_selectedUnits = m_player->getSelectedUnits();
-                } else {
-                    // we get in a state where no units are selected,
-                    // so get back into "select" state.
-                    m_player->setContextMouseState(MOUSESTATE_SELECT);
-                }
+                changeSelectedUnits(m_player->getAllMyUnitsForGroupNr(iGroup));
             }
         }
     }
@@ -459,8 +451,7 @@ void cMouseUnitsSelectedState::onKeyPressed(const cKeyboardEvent &event) {
     
     // order any selected harvester to return to refinery
     if (event.hasKey(KEY_D)) {
-        const std::vector<int> &selectedUnits = m_player->getSelectedUnits();
-        for (auto & id : selectedUnits) {
+        for (const auto &id : m_player->getSelectedUnits()) {
             cUnit &pUnit = unit[id];
             if (pUnit.isHarvester() && pUnit.canUnload()) {
                 pUnit.findBestStructureCandidateAndHeadTowardsItOrWait(REFINERY, true, INTENT_UNLOAD_SPICE);

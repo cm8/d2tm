@@ -47,9 +47,6 @@ public:
     void onBlur() override;
 
 private:
-    // A list of unit id's that we have selected
-    std::vector<int> m_selectedUnits;
-
     // when move to refinery, it will only be applicable to harvesters.
     bool m_harvestersSelected;
 
@@ -63,6 +60,10 @@ private:
     eMouseUnitsSelectedState m_state;
     eMouseUnitsSelectedState m_prevState;
 
+    bool deselectUnit(int id);
+
+    void changeSelectedUnits(const std::vector<int> &ids);
+
     void onMouseLeftButtonClicked();
 
     void onMouseRightButtonPressed();
@@ -73,9 +74,9 @@ private:
 
     void onMouseMovedTo();
 
-    void updateSelectedUnitsState();
+    void updateSelectedUnitsState(const std::vector<int> &ids, bool reset);
 
-    void evaluateSelectedUnits();
+    void updateSelectedUnitsState();
 
     void setState(eMouseUnitsSelectedState newState);
 
