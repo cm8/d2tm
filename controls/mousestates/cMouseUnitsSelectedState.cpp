@@ -240,17 +240,12 @@ void cMouseUnitsSelectedState::evaluateMouseMoveState() {
     setState(SELECTED_STATE_MOVE);
 
     cAbstractStructure *hoverStructure = m_context->getStructurePointerWhereMouseHovers();
-
-    // this feels a little awkward, but having an extra 'bool' for this if statement
-    // is probably a bit too much at this point.
-    bool unitsWhichCanAttackSelected = m_infantrySelected || m_repairableUnitsSelected; // don't try to attack with harvesters
-
     if (hoverStructure) {
         if (!hoverStructure->getPlayer()->isSameTeamAs(m_player)) {
             if (m_infantrySelected && m_infantryShouldCapture) {
                 setState(SELECTED_STATE_CAPTURE);
                 mouseTile = MOUSE_LEFT; //MOUSE_MOVE;
-            } else if (unitsWhichCanAttackSelected) {
+            } else if (m_infantrySelected || m_repairableUnitsSelected) {
                 mouseTile = MOUSE_ATTACK;
                 setState(SELECTED_STATE_ATTACK);
             }
@@ -276,18 +271,19 @@ void cMouseUnitsSelectedState::evaluateMouseMoveState() {
         }
     }
 
-    if (unitsWhichCanAttackSelected) {
-        int hoverUnitId = m_context->getIdOfUnitWhereMouseHovers();
-        if (hoverUnitId > -1) {
-            cUnit &pUnit = unit[hoverUnitId];
-            if (pUnit.isValid()) {
-                if (!pUnit.getPlayer()->isSameTeamAs(m_player)) {
+    int hoverUnitId = m_context->getIdOfUnitWhereMouseHovers();
+    if (hoverUnitId > -1) {
+        cUnit &pUnit = unit[hoverUnitId];
+        if (pUnit.isValid()) {
+            if (!pUnit.getPlayer()->isSameTeamAs(m_player)) {
+                // don't try to attack with harvesters
+                if (m_infantrySelected || m_repairableUnitsSelected) {
                     mouseTile = MOUSE_ATTACK;
                     setState(SELECTED_STATE_ATTACK);
-                } else if (pUnit.getPlayer() == m_player) {
-                    mouseTile = MOUSE_PICK;
-                    setState(SELECTED_STATE_SELECT); // allow selecting of my unit
                 }
+            } else if (pUnit.getPlayer() == m_player) {
+                mouseTile = MOUSE_PICK;
+                setState(SELECTED_STATE_SELECT); // allow selecting of my unit
             }
         }
     }
