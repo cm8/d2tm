@@ -46,6 +46,19 @@ cMouseUnitsSelectedState::cMouseUnitsSelectedState(cPlayer *player, cGameControl
 
 }
 
+void cMouseUnitsSelectedState::onNotifyGameEvent(const s_GameEvent &event) {
+    logbook(fmt::format(
+        "cMouseUnitsSelectedState::onNotifyGameEvent(): entityType:{}, eventType:{}",
+        event.entityType, event.eventType
+    ));
+
+    if (event.entityType == eBuildType::UNIT) {
+        if (event.eventType == eGameEventType::GAME_EVENT_DESTROYED) {
+            deselectUnit(event.entityID);
+        }
+    }
+}
+
 void cMouseUnitsSelectedState::onNotifyMouseEvent(const s_MouseEvent &event) {
 
     // these methods can have a side-effect which changes mouseTile...

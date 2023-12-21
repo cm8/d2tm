@@ -1902,6 +1902,10 @@ void cPlayer::onMyUnitDestroyed(const s_GameEvent &event) {
             reinforceHarvesterIfNeeded(pUnit.getCell());
         }
     }
+
+    if (m_Human) {
+        gameControlsContext->onNotifyGameEvent(event);
+    }
 }
 
 void cPlayer::reinforceHarvesterIfNeeded(int cell) {
