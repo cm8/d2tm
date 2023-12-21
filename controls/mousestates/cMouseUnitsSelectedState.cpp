@@ -263,7 +263,7 @@ void cMouseUnitsSelectedState::evaluateMouseMoveState() {
                     mouseTile = MOUSE_NORMAL; // allow "selecting" of structure, event though we have units selected
                 }
             } else if (hoverStructure->getType() == REPAIR) {
-                if (m_repairableUnitsSelected) {
+                if (m_repairableUnitsSelected || m_harvestersSelected) {
                     setState(SELECTED_STATE_REPAIR);
                 } else {
                     setState(SELECTED_STATE_SELECT);
@@ -313,7 +313,6 @@ void cMouseUnitsSelectedState::updateSelectedUnitsState() {
         cUnit &pUnit = unit[id];
         if (pUnit.isHarvester()) {
             m_harvestersSelected = true;
-            m_repairableUnitsSelected = true;
         } else if (pUnit.isInfantryUnit()) {
             m_infantrySelected = true;
         } else {
