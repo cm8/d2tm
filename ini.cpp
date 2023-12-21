@@ -28,8 +28,8 @@
 
 #include <allegro.h>
 #include <fmt/core.h>
-#include <filesystem>
-namespace fs=std::filesystem;
+#include <experimental/filesystem>
+namespace fs=std::experimental::filesystem;
 
 int INI_SectionType(char section[30], int last);
 void INI_WordValueSENTENCE(char result[MAX_LINE_LENGTH], char value[256]);

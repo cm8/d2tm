@@ -1,9 +1,9 @@
 #include "cFileValidator.h"
 
 #include <iostream>
-#include <filesystem>
+#include <experimental/filesystem>
 
-namespace fs = std::filesystem;
+namespace fs = std::experimental::filesystem;
 
 cFileValidator::cFileValidator(const std::string &path) {
     m_path = path;
@@ -28,7 +28,7 @@ cFileValidator::~cFileValidator() {
 bool cFileValidator::fileExists() {
     // check if directory exists first
     fs::directory_entry entry_sandbox{m_path};
-    if (!entry_sandbox.exists()) {
+    if (!fs::exists(entry_sandbox.path())) {
         std::cerr << "Error: '" << m_path << "' directory not found" << std::endl;
         return false;
     }

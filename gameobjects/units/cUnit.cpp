@@ -3276,6 +3276,9 @@ void cUnit::takeDamage(int damage, int unitWhoDealsDamage, int structureWhoDeals
                     .player = getPlayer(),
                     .entitySpecificType = getType(),
                     .atCell = originCell,
+                    .isReinforce = false,
+                    .buildingListItem = nullptr,
+                    .buildingList = nullptr,
                     .originId = originId,
                     .originType = originType,
             };

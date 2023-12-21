@@ -485,6 +485,10 @@ void cAbstractStructure::damage(int hp, int originId) {
                 .entityID = getStructureId(),
                 .player = getPlayer(),
                 .entitySpecificType = getType(),
+                .atCell = -1,
+                .isReinforce = false,
+                .buildingListItem = nullptr,
+                .buildingList = nullptr,
                 .originId = originId,
                 .originType = eBuildType::UNIT // TODO: What if another structure damaged me!?
         };

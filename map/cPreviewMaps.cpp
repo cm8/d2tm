@@ -2,9 +2,9 @@
 #include "data/gfxdata.h"
 #include "map/cMap.h"
 
-#include <filesystem>
+#include <experimental/filesystem>
 
-namespace fs = std::filesystem;
+namespace fs = std::experimental::filesystem;
 
 #include <iostream>
 #include <algorithm>
@@ -182,8 +182,8 @@ void cPreviewMaps::loadSkirmishMaps() {
     // scans for all ini files
     initPreviews(); // clear all of them
 
-    const std::filesystem::path pathfile{"skirmish"};
-    for (auto const &file: std::filesystem::directory_iterator{pathfile}) {
+    const std::experimental::filesystem::path pathfile{"skirmish"};
+    for (auto const &file: std::experimental::filesystem::directory_iterator{pathfile}) {
         auto fullname = file.path().string();
         if (file.path().extension() == ".ini") {
             loadSkirmish(fullname);

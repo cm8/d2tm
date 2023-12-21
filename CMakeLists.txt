@@ -1,6 +1,6 @@
-cmake_minimum_required(VERSION 3.21)
+cmake_minimum_required(VERSION 3.10)
 
-set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD 17)
 
 project(d2tm)
 
@@ -85,7 +85,14 @@ if (UNIX)
       alleg
       alfont
       fmt::fmt
+      stdc++fs
   )
+#  #builds 32-bit binaries, needs 32bit liballeg.so to link to
+#  set_target_properties(${PROJECT_NAME} PROPERTIES LINK_FLAGS "-L/usr/lib/i386-linux-gnu/")
+#  add_definitions( -m32)
+#  set(CMAKE_EXE_LINKER_FLAGS         "${CMAKE_EXE_LINKER_FLAGS} -m32")
+#  set(CMAKE_SHARED_LIBRARY_C_FLAGS   "${CMAKE_SHARED_LIBRARY_C_FLAGS} -m32")
+#  set(CMAKE_SHARED_LIBRARY_CXX_FLAGS "${CMAKE_SHARED_LIBRARY_CXX_FLAGS} -m32")
 else()
   target_link_libraries(${PROJECT_NAME}
   PRIVATE
@@ -100,7 +107,7 @@ endif()
 if(CMAKE_BUILD_TYPE MATCHES Debug)
   set(D2TM_OPTMIZATION "-O0")
 else()
-  set(D2TM_OPTMIZATION "-O3")
+  set(D2TM_OPTMIZATION "-O2")
   set_target_properties(${PROJECT_NAME} PROPERTIES
     INTERPROCEDURAL_OPTIMIZATION TRUE
   )
@@ -109,15 +116,12 @@ endif()
 target_compile_options(${PROJECT_NAME}
   PRIVATE
     ${D2TM_OPTMIZATION}
-    "-Werror"
     "-Wall"
     "-Wextra"
     "-Wpedantic"
     "-Wnon-virtual-dtor"
     "-Wuseless-cast"
-    "-Wredundant-tags"
     "-Wzero-as-null-pointer-constant"
-    "-Wextra-semi"
 )
 
 if (NOT UNIX)

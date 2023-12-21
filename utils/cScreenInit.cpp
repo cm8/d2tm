@@ -9,7 +9,6 @@
 #include <array>
 #include <cassert>
 #include <optional>
-#include <span>
 #include <vector>
 
 namespace {
@@ -26,7 +25,7 @@ constexpr int kNonMagicVideoDriver = GFX_XWINDOWS_FULLSCREEN;
 // tries them in this order (1st come first serve)
 // do note, when DPI is > 100% in OS (atleast in Windows) things seem to get wonky.
 // see also: https://github.com/stefanhendriks/Dune-II---The-Maker/issues/314
-constexpr std::array<ScreenResolution, 9> kResolutionsToTry = {
+std::vector<ScreenResolution> kResolutionsToTry = {
     ScreenResolution{3840, 2160}, // 4k
     ScreenResolution{2048, 1536}, // 4:3 aspect ratio
     ScreenResolution{1920, 1080}, // Full HD
@@ -48,7 +47,7 @@ const GFX_MODE* FindGfxMode(const GFX_MODE_LIST& list, ScreenResolution res, int
     return nullptr;
 }
 
-std::optional<ScreenResolution> TryAndSetFirstValidResolution(std::span<const ScreenResolution> resolutionsToTry) {
+std::optional<ScreenResolution> TryAndSetFirstValidResolution(std::vector<ScreenResolution> resolutionsToTry) {
     auto logger = cLogger::getInstance();
 
     for (ScreenResolution res : resolutionsToTry) {
