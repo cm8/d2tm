@@ -18,6 +18,7 @@ public:
     static cFlag * createSmallFlag(cPlayer * player, cPoint & position);
 
     void setBig(bool value) { big = value; }
+    void setPlayer(cPlayer * player) { this->player = player; }
 private:
     cPoint absCoords;
 

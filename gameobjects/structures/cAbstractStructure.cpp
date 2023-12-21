@@ -658,6 +658,10 @@ void cAbstractStructure::getsCapturedBy(cPlayer *pPlayer) {
     getPlayer()->decreaseStructureAmount(getType());
     iPlayer = pPlayer->getId();
     pPlayer->increaseStructureAmount(getType());
+
+    for (auto flag : flags) {
+        flag->setPlayer(pPlayer);
+    }
 }
 
 int cAbstractStructure::getRandomPosX() {
