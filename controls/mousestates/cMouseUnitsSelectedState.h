@@ -53,8 +53,9 @@ private:
     // when move to refinery, it will only be applicable to harvesters.
     bool m_harvestersSelected;
 
-    // todo: when we want to capture structures, it will only send out the infantry
+    // when we want to capture structures, it will only send out the infantry
     bool m_infantrySelected;
+    bool m_infantryShouldCapture;
 
     // when sending to repair facility, only repairable units go to that
     bool m_repairableUnitsSelected;

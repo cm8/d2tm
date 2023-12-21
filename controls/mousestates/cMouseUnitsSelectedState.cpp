@@ -40,6 +40,7 @@ cMouseUnitsSelectedState::cMouseUnitsSelectedState(cPlayer *player, cGameControl
         m_selectedUnits(),
         m_harvestersSelected(false),
         m_infantrySelected(false),
+        m_infantryShouldCapture(false),
         m_repairableUnitsSelected(false),
         m_state(SELECTED_STATE_MOVE),
         m_prevState(SELECTED_STATE_MOVE) {
@@ -122,7 +123,8 @@ void cMouseUnitsSelectedState::onMouseLeftButtonClicked() {
             }
         } else if (m_state == SELECTED_STATE_REPAIR ||
                     m_state == SELECTED_STATE_REFINERY ||
-                    m_state == SELECTED_STATE_MOVE) {
+                    m_state == SELECTED_STATE_MOVE ||
+                    m_state == SELECTED_STATE_CAPTURE) {
 
             for (auto id: m_selectedUnits) {
                 cUnit &pUnit = unit[id];
@@ -141,9 +143,11 @@ void cMouseUnitsSelectedState::onMouseLeftButtonClicked() {
                 } else {
                     if (pUnit.isInfantryUnit()) {
                         infantryAcknowledged = true;
+                        pUnit.move_to(mouseCell);
+                    } else if (m_state != SELECTED_STATE_CAPTURE) {
+                        unitAcknowledged = true;
+                        pUnit.move_to(mouseCell);
                     }
-                    unitAcknowledged = true;
-                    pUnit.move_to(mouseCell);
                 }
             }
             spawnParticle(D2TM_PARTICLE_MOVE);
@@ -243,7 +247,10 @@ void cMouseUnitsSelectedState::evaluateMouseMoveState() {
 
     if (hoverStructure) {
         if (!hoverStructure->getPlayer()->isSameTeamAs(m_player)) {
-            if (unitsWhichCanAttackSelected) {
+            if (m_infantrySelected && m_infantryShouldCapture) {
+                setState(SELECTED_STATE_CAPTURE);
+                mouseTile = MOUSE_LEFT; //MOUSE_MOVE;
+            } else if (unitsWhichCanAttackSelected) {
                 mouseTile = MOUSE_ATTACK;
                 setState(SELECTED_STATE_ATTACK);
             }
@@ -291,6 +298,7 @@ void cMouseUnitsSelectedState::onStateSet() {
     m_selectedUnits = m_player->getSelectedUnits();
 
     evaluateSelectedUnits();
+    m_infantryShouldCapture = false;
     updateSelectedUnitsState();
 
     mouseTile = MOUSE_MOVE; // TODO: check if unit at cell
@@ -416,6 +424,11 @@ void cMouseUnitsSelectedState::onKeyDown(const cKeyboardEvent &event) {
             }
         }
     }
+
+    if (event.hasKey(KEY_E) && !m_infantryShouldCapture) {
+        m_infantryShouldCapture = true;
+        onMouseMovedTo();
+    }
     // force move?
 }
 
@@ -428,6 +441,12 @@ void cMouseUnitsSelectedState::onKeyPressed(const cKeyboardEvent &event) {
     if (event.hasKey(KEY_LSHIFT) || event.hasKey(KEY_RSHIFT)) {
         toPreviousState();
         evaluateMouseMoveState();
+    }
+
+    // leave capture intent
+    if (event.hasKey(KEY_E)) {
+        m_infantryShouldCapture = false;
+        onMouseMovedTo();
     }
 
     // go to repair state
