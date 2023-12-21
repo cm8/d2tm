@@ -77,7 +77,8 @@ void INI_Sentence(FILE *f, char result[MAX_LINE_LENGTH]) {
         result[i] = '\0';
 
     while ((feof(f) == 0) && ((ch = fgetc(f)) != '\n')) {
-        result[pos] = ch;
+        if (ch != '\r')
+            result[pos] = ch;
         pos++;
 
         // do not allow strings greater then 80 characters. This check prevents a crash for
