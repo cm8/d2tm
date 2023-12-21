@@ -15,10 +15,13 @@ cMouse::cMouse() : m_textDrawer(bene_font), coords(cPoint(0,0)) {
 	z=0;
 	leftButtonPressed=false;
 	rightButtonPressed=false;
+	middleButtonPressed=false;
 	leftButtonPressedInPreviousFrame=false;
 	rightButtonPressedInPreviousFrame=false;
+	middleButtonPressedInPreviousFrame=false;
 	leftButtonClicked=false;
 	rightButtonClicked=false;
+	middleButtonClicked=false;
 	mouseScrolledUp=false;
 	mouseScrolledDown=false;
 	zValuePreviousFrame = mouse_z;
@@ -59,14 +62,17 @@ void cMouse::updateState() {
 	// check if leftButtonIsPressed=true (which is the previous frame)
     leftButtonPressedInPreviousFrame = leftButtonPressed;
     rightButtonPressedInPreviousFrame = rightButtonPressed;
+    middleButtonPressedInPreviousFrame = middleButtonPressed;
 
     leftButtonPressed = mouse_b & 1;
     rightButtonPressed = mouse_b & 2;
+    middleButtonPressed = mouse_b & 4;
 
 	// now check if the leftButtonPressed == false, but the previous frame was true (if so, it is
 	// counted as a click)
     leftButtonClicked = (leftButtonPressedInPreviousFrame == true && leftButtonPressed == false);
     rightButtonClicked = (rightButtonPressedInPreviousFrame == true && rightButtonPressed == false);
+    middleButtonClicked = (middleButtonPressedInPreviousFrame == true && middleButtonPressed == false);
 
     mouseScrolledUp = mouseScrolledDown = false;
 
@@ -125,6 +131,16 @@ void cMouse::updateState() {
 
         if (rightButtonClicked) {
             event.eventType = eMouseEventType::MOUSE_RIGHT_BUTTON_CLICKED;
+            _mouseObserver->onNotifyMouseEvent(event);
+        }
+
+        if (middleButtonPressed) {
+            event.eventType = eMouseEventType::MOUSE_MIDDLE_BUTTON_PRESSED;
+            _mouseObserver->onNotifyMouseEvent(event);
+        }
+
+        if (middleButtonClicked) {
+            event.eventType = eMouseEventType::MOUSE_MIDDLE_BUTTON_CLICKED;
             _mouseObserver->onNotifyMouseEvent(event);
         }
     }

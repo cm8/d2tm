@@ -30,6 +30,8 @@ struct s_MouseEvent {
             case eMouseEventType::MOUSE_RIGHT_BUTTON_PRESSED: return "MOUSE_RIGHT_BUTTON_PRESSED";
             case eMouseEventType::MOUSE_SCROLLED_DOWN: return "MOUSE_SCROLLED_DOWN";
             case eMouseEventType::MOUSE_SCROLLED_UP: return "MOUSE_SCROLLED_UP";
+            case eMouseEventType::MOUSE_MIDDLE_BUTTON_CLICKED: return "MOUSE_MIDDLE_BUTTON_CLICKED";
+            case eMouseEventType::MOUSE_MIDDLE_BUTTON_PRESSED: return "MOUSE_MIDDLE_BUTTON_PRESSED";
             case eMouseEventType::MOUSE_LEFT_BUTTON_CLICKED: return "MOUSE_LEFT_BUTTON_CLICKED";
             case eMouseEventType::MOUSE_LEFT_BUTTON_PRESSED: return "MOUSE_LEFT_BUTTON_PRESSED";
             case eMouseEventType::MOUSE_NONE: return "MOUSE_NONE";

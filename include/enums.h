@@ -254,11 +254,11 @@ enum eMouseEventType {
 	MOUSE_MOVED_TO,
     // When mouse button has been pressed down, and released; it becomes a "click"
 	MOUSE_RIGHT_BUTTON_CLICKED,
-    // When mouse button has been pressed down, and released; it becomes a "click"
+	MOUSE_MIDDLE_BUTTON_CLICKED,
 	MOUSE_LEFT_BUTTON_CLICKED,
     // If a mouse button has been pressed (held down)
 	MOUSE_RIGHT_BUTTON_PRESSED,
-    // If a mouse button has been pressed (held down)
+	MOUSE_MIDDLE_BUTTON_PRESSED,
 	MOUSE_LEFT_BUTTON_PRESSED,
     // Mouse scroll wheel moved up
 	MOUSE_SCROLLED_UP,

@@ -29,11 +29,15 @@ public:
 
     bool isRightButtonPressed() { return rightButtonPressed; }
 
+    bool isMiddleButtonPressed() { return middleButtonPressed; }
+
     // these functions return true when the mouse button was pressed in the previous
     // frame, but released in the current (which is counted as a 'click')
     bool isLeftButtonClicked() { return leftButtonClicked; }
 
     bool isRightButtonClicked() { return rightButtonClicked; }
+
+    bool isMiddleButtonClicked() { return middleButtonClicked; }
 
     int getX() { return coords.x; }
 
@@ -86,12 +90,15 @@ private:
 
     bool leftButtonPressed;
     bool rightButtonPressed;
+    bool middleButtonPressed;
 
     bool leftButtonClicked;
     bool rightButtonClicked;
+    bool middleButtonClicked;
 
     bool leftButtonPressedInPreviousFrame;
     bool rightButtonPressedInPreviousFrame;
+    bool middleButtonPressedInPreviousFrame;
 
     bool mouseScrolledUp;
     bool mouseScrolledDown;
