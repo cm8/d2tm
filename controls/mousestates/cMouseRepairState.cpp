@@ -24,6 +24,9 @@ void cMouseRepairState::onNotifyMouseEvent(const s_MouseEvent &event) {
         case MOUSE_RIGHT_BUTTON_CLICKED:
             onMouseRightButtonClicked();
             break;
+        case MOUSE_MIDDLE_BUTTON_CLICKED:
+            onMouseMiddleButtonClicked();
+            break;
         case MOUSE_MOVED_TO:
             onMouseMovedTo();
             break;
@@ -64,6 +67,10 @@ void cMouseRepairState::onMouseRightButtonClicked() {
     }
 
     m_mouse->resetDragViewportInteraction();
+}
+
+void cMouseRepairState::onMouseMiddleButtonClicked() {
+    m_context->toPreviousState();
 }
 
 void cMouseRepairState::onMouseMovedTo() {

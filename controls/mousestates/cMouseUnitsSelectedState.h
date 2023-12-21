@@ -68,6 +68,8 @@ private:
 
     void onMouseRightButtonClicked();
 
+    void onMouseMiddleButtonClicked();
+
     void onMouseMovedTo();
 
     void updateSelectedUnitsState();

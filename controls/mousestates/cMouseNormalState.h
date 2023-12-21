@@ -51,6 +51,8 @@ private:
 
     void onMouseRightButtonClicked();
 
+    void onMouseMiddleButtonClicked();
+
     void onMouseMovedTo();
 
     void onKeyDown(const cKeyboardEvent &event);

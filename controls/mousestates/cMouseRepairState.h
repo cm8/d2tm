@@ -33,6 +33,8 @@ class cMouseRepairState : public cMouseState {
 
     void onMouseRightButtonClicked();
 
+    void onMouseMiddleButtonClicked();
+
     void onMouseMovedTo();
 
     int getMouseTileForRepairState();
