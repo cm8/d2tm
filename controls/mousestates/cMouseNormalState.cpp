@@ -130,6 +130,7 @@ void cMouseNormalState::onMouseLeftButtonClicked() {
 
     if (selectedUnits) {
         m_context->setMouseState(MOUSESTATE_UNITS_SELECTED);
+        m_player->selected_structure = -1;
     }
 
     m_mouse->resetBoxSelect();
@@ -213,9 +214,9 @@ void cMouseNormalState::onKeyPressed(const cKeyboardEvent &event) {
         if (iGroup > 0) {
             // select all units for group
             m_player->deselectAllUnits();
-            bool anyUnitSelected = m_player->selectUnitsFromGroup(iGroup);
-            if (anyUnitSelected) {
+            if (m_player->selectUnitsFromGroup(iGroup)) {
                 m_player->setContextMouseState(MOUSESTATE_UNITS_SELECTED);
+                m_player->selected_structure = -1;
             }
         }
     }
