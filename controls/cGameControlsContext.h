@@ -59,6 +59,12 @@ class cGameControlsContext : public cInputObserver, cScenarioObserver {
 
         void onFocusMouseStateEvent();
 
+        bool isHoldingCtrl() { return m_keyDownCtrl; }
+
+        bool isHoldingShift() { return m_keyDownShift; }
+
+        bool isHoldingE() { return m_keyDownE; }
+
     protected:
 		void determineToolTip();
 		void determineHoveringOverStructureId();
@@ -101,4 +107,9 @@ class cGameControlsContext : public cInputObserver, cScenarioObserver {
         void onBlurMouseStateEvent();
         void onMouseMovedTo(const s_MouseEvent &event);
         void updateMouseCell(const cPoint &coords);
+
+        // keyboard state
+        bool m_keyDownCtrl;
+        bool m_keyDownShift;
+        bool m_keyDownE;
 };

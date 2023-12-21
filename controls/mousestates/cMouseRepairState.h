@@ -38,4 +38,8 @@ class cMouseRepairState : public cMouseState {
     void onMouseMovedTo();
 
     int getMouseTileForRepairState();
+
+    bool leaveOnCtrl;
+    bool leaveOnShift;
+    bool leaveOnE;
 };

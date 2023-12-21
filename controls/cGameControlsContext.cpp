@@ -14,6 +14,9 @@ cGameControlsContext::cGameControlsContext(cPlayer *player, cMouse *mouse) :
         m_state(MOUSESTATE_SELECT),
         m_prevState(MOUSESTATE_SELECT),
         m_prevStateBeforeRepair(MOUSESTATE_SELECT),
+        m_keyDownCtrl(false),
+        m_keyDownShift(false),
+        m_keyDownE(false),
         m_mouse(mouse),
         m_mouseNormalState(new cMouseNormalState(player, this, m_mouse)),
         m_mouseUnitsSelectedState(new cMouseUnitsSelectedState(player, this, m_mouse)),
@@ -195,6 +198,16 @@ void cGameControlsContext::onNotifyMouseStateEvent(const s_MouseEvent &event) {
 }
 
 void cGameControlsContext::onNotifyKeyboardEvent(const cKeyboardEvent &event) {
+    if (event.isType(eKeyEventType::HOLD)) {
+        if (event.hasKey(KEY_LCONTROL) || event.hasKey(KEY_RCONTROL)) m_keyDownCtrl = true;
+        if (event.hasKey(KEY_LSHIFT) || event.hasKey(KEY_RSHIFT)) m_keyDownShift = true;
+        if (event.hasKey(KEY_E)) m_keyDownE = true;
+    }
+    if (event.isType(eKeyEventType::PRESSED)) {
+        if (event.hasKey(KEY_LCONTROL) || event.hasKey(KEY_RCONTROL)) m_keyDownCtrl = false;
+        if (event.hasKey(KEY_LSHIFT) || event.hasKey(KEY_RSHIFT)) m_keyDownShift = false;
+        if (event.hasKey(KEY_E)) m_keyDownE = false;
+    }
     switch (m_state) {
         case MOUSESTATE_SELECT:
             m_mouseNormalState->onNotifyKeyboardEvent(event);

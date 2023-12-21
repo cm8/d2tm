@@ -41,20 +41,28 @@ void cMouseRepairState::onNotifyMouseEvent(const s_MouseEvent &event) {
 }
 
 void cMouseRepairState::onMouseLeftButtonClicked() {
+    //bool leaveRepairState = true;
+
     int hoverUnitId = m_context->getIdOfUnitWhereMouseHovers();
     if (hoverUnitId > -1) {
         cUnit &pUnit = unit[hoverUnitId];
         if (pUnit.isValid() && pUnit.belongsTo(m_player) && pUnit.isEligibleForRepair()) {
             pUnit.findBestStructureCandidateAndHeadTowardsItOrWait(REPAIR, true, INTENT_REPAIR);
+            //leaveRepairState = false;
+        }
+    } else {
+        cAbstractStructure *pStructure = m_context->getStructurePointerWhereMouseHovers();
+        if (pStructure && pStructure->isValid()) {
+            if (pStructure->belongsTo(m_player) && pStructure->isDamaged()) {
+                pStructure->setRepairing(!pStructure->isRepairing());
+                //leaveRepairState = false;
+            }
         }
     }
 
-    cAbstractStructure *pStructure = m_context->getStructurePointerWhereMouseHovers();
-    if (pStructure && pStructure->isValid()) {
-        if (pStructure->belongsTo(m_player) && pStructure->isDamaged()) {
-            pStructure->setRepairing(!pStructure->isRepairing());
-        }
-    }
+    //if (leaveRepairState) {
+    //    m_context->toPreviousState();
+    //}
 }
 
 void cMouseRepairState::onMouseRightButtonPressed() {
@@ -80,11 +88,45 @@ void cMouseRepairState::onMouseMovedTo() {
 void cMouseRepairState::onStateSet() {
     mouseTile = getMouseTileForRepairState();
     m_mouse->setTile(mouseTile);
+    leaveOnCtrl = !m_context->isHoldingCtrl();
+    leaveOnShift = !m_context->isHoldingShift();
+    leaveOnE = !m_context->isHoldingE();
 }
 
 
 void cMouseRepairState::onNotifyKeyboardEvent(const cKeyboardEvent &event) {
-    if (event.isType(eKeyEventType::PRESSED) && event.hasKey(KEY_R)) {
+    bool leaveRepairState = false;
+
+    // SHIFT, CONTROL and E are not applicable to RepairState
+    // return to previous state if they are hit after we entered it
+    if (event.isType(eKeyEventType::HOLD)) {
+        if ((event.hasKey(KEY_LCONTROL) || event.hasKey(KEY_RCONTROL)) && leaveOnCtrl) {
+            leaveRepairState = true;
+        }
+        if ((event.hasKey(KEY_LSHIFT) || event.hasKey(KEY_RSHIFT)) && leaveOnShift) {
+            leaveRepairState = true;
+        }
+        if ((event.hasKey(KEY_E)) && leaveOnE) {
+            leaveRepairState = true;
+        }
+    }
+
+    if (event.isType(eKeyEventType::PRESSED)) {
+        if (event.hasKey(KEY_LCONTROL) || event.hasKey(KEY_RCONTROL)) {
+            leaveOnCtrl = true;
+        }
+        if (event.hasKey(KEY_LSHIFT) || event.hasKey(KEY_RSHIFT)) {
+            leaveOnShift = true;
+        }
+        if (event.hasKey(KEY_E)) {
+            leaveOnE = true;
+        }
+        if (event.hasKey(KEY_R)) {
+            leaveRepairState = true;
+        }
+    }
+
+    if (leaveRepairState) {
         m_context->toPreviousState();
     }
 }
