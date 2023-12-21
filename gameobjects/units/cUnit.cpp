@@ -2397,6 +2397,13 @@ void cUnit::thinkFast_move() {
                             iPathFails = 0;
                         } else {
                             log("Something else blocks path, but goal itself is not occupied.");
+                            if (iType == MCV) {
+                                int caId = CARRYALL_TRANSFER(iID, iGoalCell);
+                                if (caId  >= 0) {
+                                    iCarryAll = caId;
+                                    return; // success!
+                                }
+                            }
                             setGoalCell(iCell);
                             iPathIndex = -1;
                             iPathFails = 0;
@@ -2420,6 +2427,18 @@ void cUnit::thinkFast_move() {
                     iPathFails++;
 
                     if (iPathFails > 2) {
+                        if (iResult == -2) {
+                            log("Blocked and creating a path failed more than twice, kindly asking CARRYALL for transfer..");
+                            // transfer units other than MCV or HARVESTER just to a closeby cell,
+                            // avoid single unit transfers to foreign camps (human + cpu players)
+                            if (iType == MCV || iType == HARVESTER || map.distance(iCell, iGoalCell) < 7) {
+                                int caId = CARRYALL_TRANSFER(iID, iGoalCell);
+                                if (caId  >= 0) {
+                                    iCarryAll = caId;
+                                    return; // success!
+                                }
+                            }
+                        }
                         // notify that we can't create path, we should do something about this?
                         // at this point we can still ready unit state about path goal, etc.
                         s_GameEvent event {
