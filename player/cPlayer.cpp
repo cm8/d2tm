@@ -782,6 +782,10 @@ void cPlayer::think() {
     if (brain_) {
         brain_->think();
     }
+
+    if (m_Human) {
+        gameControlsContext->think();
+    }
 }
 
 /**

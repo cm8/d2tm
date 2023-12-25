@@ -131,6 +131,19 @@ cAbstractStructure *cGameControlsContext::getStructurePointerWhereMouseHovers() 
     return structure[m_mouseHoveringOverStructureId];
 }
 
+// called every 100 ms
+void cGameControlsContext::think() {
+    if (TIMER_leftButtonPressed>0) {
+        TIMER_leftButtonPressed--;
+    }
+    if (TIMER_rightButtonPressed>0) {
+        TIMER_rightButtonPressed--;
+    }
+    if (TIMER_middleButtonPressed>0) {
+        TIMER_middleButtonPressed--;
+    }
+}
+
 void cGameControlsContext::onMouseMovedTo(const s_MouseEvent &event) {
     updateMouseCell(event.coords);
     bool mouseOnBattleField = isMouseOnBattleField();

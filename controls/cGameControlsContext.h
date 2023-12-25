@@ -59,6 +59,26 @@ class cGameControlsContext : public cInputObserver, cScenarioObserver {
 
         void onFocusMouseStateEvent();
 
+        void think();
+
+        int getLeftButtonPressedTimer() { return TIMER_leftButtonPressed; }
+
+        int getRightButtonPressedTimer() { return TIMER_rightButtonPressed; }
+
+        int getMiddleButtonPressedTimer() { return TIMER_middleButtonPressed; }
+
+        void setLeftButtonPressedTimer(int t) { TIMER_leftButtonPressed = t; }
+
+        void setRightButtonPressedTimer(int t) { TIMER_rightButtonPressed = t; }
+
+        void setMiddleButtonPressedTimer(int t) { TIMER_middleButtonPressed = t; }
+
+        bool isLeftButtonPressedTimedOut() { return TIMER_leftButtonPressed == 0; }
+
+        bool isRightButtonPressedTimedOut() { return TIMER_rightButtonPressed == 0; }
+
+        bool isMiddleButtonPressedTimedOut() { return TIMER_middleButtonPressed == 0; }
+
         bool isHoldingCtrl() { return m_keyDownCtrl; }
 
         bool isHoldingShift() { return m_keyDownShift; }
@@ -107,6 +127,9 @@ class cGameControlsContext : public cInputObserver, cScenarioObserver {
         void onBlurMouseStateEvent();
         void onMouseMovedTo(const s_MouseEvent &event);
         void updateMouseCell(const cPoint &coords);
+        int TIMER_leftButtonPressed;
+        int TIMER_rightButtonPressed;
+        int TIMER_middleButtonPressed;
 
         // keyboard state
         bool m_keyDownCtrl;

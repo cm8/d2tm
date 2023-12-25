@@ -24,6 +24,9 @@ void cMouseRepairState::onNotifyMouseEvent(const s_MouseEvent &event) {
         case MOUSE_RIGHT_BUTTON_CLICKED:
             onMouseRightButtonClicked();
             break;
+        case MOUSE_MIDDLE_BUTTON_PRESSED:
+            onMouseMiddleButtonPressed();
+            break;
         case MOUSE_MIDDLE_BUTTON_CLICKED:
             onMouseMiddleButtonClicked();
             break;
@@ -77,8 +80,19 @@ void cMouseRepairState::onMouseRightButtonClicked() {
     m_mouse->resetDragViewportInteraction();
 }
 
+void cMouseRepairState::onMouseMiddleButtonPressed() {
+    if (m_context->getMiddleButtonPressedTimer() < 0) {
+        m_context->setMiddleButtonPressedTimer(5);
+    }
+}
+
 void cMouseRepairState::onMouseMiddleButtonClicked() {
-    m_context->toPreviousState();
+    if (m_context->isMiddleButtonPressedTimedOut()) {
+        m_context->toPreviousState();
+    } else {
+        m_context->setMiddleButtonPressedTimer(-1);
+        onMouseLeftButtonClicked();
+    }
 }
 
 void cMouseRepairState::onMouseMovedTo() {
@@ -88,6 +102,7 @@ void cMouseRepairState::onMouseMovedTo() {
 void cMouseRepairState::onStateSet() {
     mouseTile = getMouseTileForRepairState();
     m_mouse->setTile(mouseTile);
+    m_context->setMiddleButtonPressedTimer(-1);
     leaveOnCtrl = !m_context->isHoldingCtrl();
     leaveOnShift = !m_context->isHoldingShift();
     leaveOnE = !m_context->isHoldingE();
