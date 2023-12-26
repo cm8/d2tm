@@ -64,6 +64,8 @@ private:
 
     void changeSelectedUnits(const std::vector<int> &ids);
 
+    void onMouseLeftButtonPressed();
+
     void onMouseLeftButtonClicked();
 
     void onMouseRightButtonPressed();

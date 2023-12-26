@@ -64,7 +64,7 @@ void cMouseUnitsSelectedState::onNotifyMouseEvent(const s_MouseEvent &event) {
     // these methods can have a side-effect which changes mouseTile...
     switch (event.eventType) {
         case MOUSE_LEFT_BUTTON_PRESSED:
-            m_mouse->boxSelectLogic(m_context->getMouseCell());
+            onMouseLeftButtonPressed();
             break;
         case MOUSE_LEFT_BUTTON_CLICKED:
             onMouseLeftButtonClicked();
@@ -131,6 +131,24 @@ void cMouseUnitsSelectedState::changeSelectedUnits(const std::vector<int> &ids) 
         // we get in a state where no units are selected,
         // so get back into "select" state.
         m_context->setMouseState(MOUSESTATE_SELECT);
+    }
+}
+
+void cMouseUnitsSelectedState::onMouseLeftButtonPressed() {
+    m_mouse->boxSelectLogic(m_context->getMouseCell());
+    if (!m_mouse->isBoxSelecting()) {
+        if (m_context->getLeftButtonPressedTimer() < 0) {
+            m_context->setLeftButtonPressedTimer(5);
+        }
+        if (m_context->isLeftButtonPressedTimedOut() && !m_infantryShouldCapture) {
+            m_infantryShouldCapture = true;
+            onMouseMovedTo();
+        }
+    } else {
+        if (!m_context->isHoldingE()) {
+            m_infantryShouldCapture = false;
+        }
+        m_context->setLeftButtonPressedTimer(-1);
     }
 }
 
@@ -230,6 +248,10 @@ void cMouseUnitsSelectedState::onMouseLeftButtonClicked() {
         }
     }
 
+    if (!m_context->isHoldingE()) {
+        m_infantryShouldCapture = false;
+    }
+    m_context->setLeftButtonPressedTimer(-1);
     m_mouse->resetBoxSelect();
 }
 
@@ -326,6 +348,7 @@ void cMouseUnitsSelectedState::evaluateMouseMoveState() {
 }
 
 void cMouseUnitsSelectedState::onStateSet() {
+    m_context->setLeftButtonPressedTimer(-1);
     m_infantryShouldCapture = false;
     updateSelectedUnitsState();
     evaluateMouseMoveState();
