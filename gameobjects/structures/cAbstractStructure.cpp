@@ -662,6 +662,16 @@ void cAbstractStructure::getsCapturedBy(cPlayer *pPlayer) {
     for (auto flag : flags) {
         flag->setPlayer(pPlayer);
     }
+
+    s_GameEvent event {
+            .eventType = eGameEventType::GAME_EVENT_CAPTURED,
+            .entityType = eBuildType::STRUCTURE,
+            .entityID = getStructureId(),
+            .player = getPlayer(),
+            .entitySpecificType = getType()
+    };
+
+    game.onNotifyGameEvent(event);
 }
 
 int cAbstractStructure::getRandomPosX() {

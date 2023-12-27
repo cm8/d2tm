@@ -1458,7 +1458,8 @@ void cPlayer::onNotifyGameEvent(const s_GameEvent &event) {
         if (event.entityType == eBuildType::STRUCTURE) {
             if (event.eventType == eGameEventType::GAME_EVENT_DESTROYED) {
                 onMyStructureDestroyed(event);
-            } else if (event.eventType == eGameEventType::GAME_EVENT_CREATED) {
+            } else if (event.eventType == eGameEventType::GAME_EVENT_CREATED ||
+                       event.eventType == eGameEventType::GAME_EVENT_CAPTURED) {
                 buildingListUpdater->onStructureCreated(event.entitySpecificType);
             }
         } else if (event.entityType == eBuildType::UNIT) {
