@@ -72,18 +72,19 @@ cSoundPlayer::cSoundPlayer(const cPlatformLayerInit&, int maxNrVoices)
         return;
     }
 
-    int nr_voices = maxNrVoices;
+    int nr_voices = 0;
     int midi_voices = 0;
 
     int card_id = get_config_id("sound", "midi_card", MIDI_AUTODETECT);
 
     while (true) {
+        nr_voices = maxNrVoices;
+
         if (nr_voices < kMinNrVoices) {
             logger->log(LOG_WARN, COMP_SOUND, "Initialization", "Failed installing sound.", OUTC_FAILED);
             return;
         }
 
-        nr_voices = maxNrVoices;
         if (card_id == MIDI_DIGMID) {
             midi_voices = nr_voices / 8;
             nr_voices = CLAMP(kMinNrVoices, nr_voices - midi_voices, maxNrVoices);
@@ -101,12 +102,14 @@ cSoundPlayer::cSoundPlayer(const cPlatformLayerInit&, int maxNrVoices)
             // One fewer voice for the samples, as MIDI playing will use a voice.
             voices.resize(nr_voices - 1, kNoVoice);
             break;
+        } else if (midi_driver) {
+            midi_driver->exit(FALSE);
         }
 
-        auto msg = fmt::format("Failed reserving {} voices. Will try {}.", nr_voices, (nr_voices / 2));
+        auto msg = fmt::format("Failed reserving {} voices. Will try {}.", maxNrVoices, (maxNrVoices / 2));
         logger->log(LOG_INFO, COMP_SOUND, "Initialization", msg, OUTC_FAILED);
 
-        maxNrVoices = (nr_voices + midi_voices) / 2;
+        maxNrVoices /= 2;
     }
 
     // Sound effects are loud, the music is queiter (its background music, so it should not be disturbing).

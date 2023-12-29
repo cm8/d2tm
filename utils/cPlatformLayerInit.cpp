@@ -9,6 +9,10 @@
 #include <cstring>
 #include <stdexcept>
 
+#if defined(ALLEGRO_UNIX) || defined(ALLEGRO_QNX)
+#include "utils/alsa/midi_alsa_seq.h"
+#endif
+
 static bool allegroInitialized = false;
 
 cPlatformLayerInit::cPlatformLayerInit(const std::string& path_to_config_file, const std::string& window_title) {
@@ -31,6 +35,10 @@ cPlatformLayerInit::cPlatformLayerInit(const std::string& path_to_config_file, c
     }
 
     logger->log(LOG_INFO, COMP_ALLEGRO, "Allegro init", allegro_id, OUTC_SUCCESS);
+    #ifdef AINTUNIX_H
+    _unix_register_midi_driver(MIDI_ALSA_SEQ, &midi_alsa_seq, TRUE, TRUE);
+    logger->log(LOG_INFO, COMP_ALLEGRO, "Registered alsa port-based allegro midi driver", allegro_id, OUTC_SUCCESS);
+    #endif
 
 	set_window_title(window_title.c_str());
 	logger->log(LOG_INFO, COMP_ALLEGRO, "Set up window title", window_title, OUTC_SUCCESS);

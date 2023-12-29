@@ -68,6 +68,10 @@ file(GLOB d2tm_SRC
         "utils/*.cpp"
         )
 
+if (UNIX)
+  list(APPEND d2tm_SRC "utils/alsa/midi_alsa_seq.cpp")
+endif()
+
 add_executable(${PROJECT_NAME}
   ${d2tm_SRC}
   Script.rc
@@ -86,6 +90,7 @@ if (UNIX)
       alfont
       fmt::fmt
       stdc++fs
+      asound
   )
 #  #builds 32-bit binaries, needs 32bit liballeg.so to link to
 #  set_target_properties(${PROJECT_NAME} PROPERTIES LINK_FLAGS "-L/usr/lib/i386-linux-gnu/")
