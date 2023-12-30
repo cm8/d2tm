@@ -72,3 +72,28 @@ In the code there are several known concepts; see below for extra information
 about them:
 
 - [Angles: how to calculate and use them to draw things](doc/convertAngleToDrawIndex.md)
+
+## Troubleshoot
+In case of non-working MIDI sound, you can choose from three alternative driver options configurable in `d2tm.cfg`. The more detailed this configuration, the lesser autodetection routines are run internally to find a working setup.
+
+This also means if `d2tm.cfg` is misconfigured or inappropriate for the interpreting machine, in spite of autodetection possibly finding a working setup, sound will not work. To revert to autodetection empty the `[sound]` section in `d2tm.cfg` (place for this project's allegro config options) or comment all entries in that section by prepending `;` like shown below.
+
+Only one `midi_card` entry, if at all, should be active. If you decomment `midi_card = ASEQ` entry, allegro will skip detecting other midi drivers. If `midi_aseq_*` are unset / stay commented, client and port will be autodetected. Check `log.txt` for the values. `VirMidi` and `Midi Through` ports are skipped by autodetect, if you need them configure `midi_aseq_*` options manually.
+
+A prerequisite to using `midi_card = DIGI`, a wavetable synth built into allegro, is a file `patches.dat`. Tool `pat2dat` of allegro is capable of generating such from sf2 soundfonts in case it is missing.  For further help on `midi_card = AMID` consult the allegro docs.
+
+```ini
+[mouse]
+mouse_accel_factor=0
+
+[sound]
+;midi_card = DIGI
+;patches = /path/to/patches.dat
+
+;midi_card = ASEQ
+;midi_aseq_client = 128
+;midi_aseq_port = 0
+
+;midi_card = AMID
+;alsa_rawmidi_device = hw:2,0
+```
